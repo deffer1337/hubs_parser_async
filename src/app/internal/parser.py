@@ -53,6 +53,8 @@ class Parser:
     """
     Aiohttp hub parser
     """
+    def __init__(self):
+        self._urls = {p.url for p in Publication.objects.all()}
 
     async def _fetch(self, session: ClientSession, url: str) -> Tuple[str, str]:
         async with session.get(url) as response:
@@ -70,7 +72,6 @@ class Parser:
         except (ValidationError, ObjectDoesNotExist) as e:
             return json_response({f"{type(e).__name__}": str(e)}, status=400)
 
-        exists_urls = await sync_to_async(lambda: {p.url for p in Publication.objects.all()})()
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(hub.url) as response:
@@ -78,7 +79,8 @@ class Parser:
                     if status == 404:
                         return json_response({"result": f"404 Not Found for this hub {hub.url}"}, status=400)
 
-            urls = list({urljoin(HUBR, url) for url in await get_urls(html_doc)}.difference(exists_urls))
+            urls = list({urljoin(HUBR, url) for url in await get_urls(html_doc)}.difference(self._urls))
+            self._urls = self._urls.union(urls)
             async with aiohttp.ClientSession() as session:
                 done = await asyncio.gather(*[self._fetch(session, url) for url in urls])
                 done_publications = await asyncio.gather(*[get_publication_fields(d[0], d[1]) for d in done])
