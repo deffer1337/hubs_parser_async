@@ -1,0 +1,31 @@
+version: '3.7'
+
+services:
+  django-admin:
+    build: ./
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./src/db.sqlite3:/db.sqlite3
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./src/.env
+
+  parser:
+    hostname: "parser"
+    build: ./
+    command: python manage.py run_parser
+    ports:
+      - "8889:8080"
+    volumes:
+      - ./src/db.sqlite3:/db.sqlite3
+    env_file:
+      - ./src/.env
+
+  task_scheduler:
+    build: ./
+    command: python manage.py run_task_scheduler
+    volumes:
+      - ./src/db.sqlite3:/db.sqlite3
+    env_file:
+      - ./src/.env

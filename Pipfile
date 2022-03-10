@@ -11,7 +11,11 @@ django-environ = "~=0.8"
 black = "~=21.12b0"
 isort = "~=5.10"
 flake8 = "~=4.0"
-
+beautifulsoup4 = "*"
+requests = "*"
+aiohttp = "<4.0.0"
+pydantic = "*"
+schedule = "*"
 
 [requires]
 python_version = "3.8"
